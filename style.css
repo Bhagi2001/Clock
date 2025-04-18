@@ -6,10 +6,12 @@
 body {
     background: linear-gradient(to right, hsl(200, 100%, 50%), hsl(175, 100%, 50%));
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     overflow: hidden;
+    margin: 0;
 }
 
 .clock {
@@ -19,6 +21,7 @@ body {
     border-radius: 50%;
     border: 2px solid black;
     position: relative;
+    margin-bottom: 2rem;
 }
 
 .clock .number {
@@ -85,4 +88,83 @@ body {
     width: 10px;
     height: 35%;
     background-color: black;
+}
+
+.alarm-controls {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 1.5rem;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 350px;
+}
+
+.time-display {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.alarm-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+}
+
+.alarm-form input, .alarm-form button {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.alarm-form button {
+    background-color: #0066cc;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+.alarm-form button:hover {
+    background-color: #0055aa;
+}
+
+.alarm-list {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.alarm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: #f0f0f0;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+}
+
+.alarm-item button {
+    background-color: #ff3333;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.alarm-active {
+    background-color: #ffcc00;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 204, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
 }
