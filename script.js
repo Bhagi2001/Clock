@@ -15,6 +15,35 @@ let alarms = [];
 let alarmTimeout;
 let isAlarmRinging = false;
 
+// Stopwatch variables
+const stopwatchDisplay = document.getElementById('stopwatch-display');
+const lapTimesContainer = document.getElementById('lap-times');
+const startStopBtn = document.getElementById('start-stop-btn');
+const resetLapBtn = document.getElementById('reset-lap-btn');
+
+let stopwatchRunning = false;
+let stopwatchInterval;
+let stopwatchStartTime = 0;
+let stopwatchElapsedTime = 0;
+let lapTimes = [];
+let lapCounter = 0;
+
+// Tab functionality
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabPanes = document.querySelectorAll('.tab-pane');
+
+tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const tabId = button.getAttribute('data-tab');
+        
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+        
+        button.classList.add('active');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+    });
+});
+
 function setClock() {
     const currentDate = new Date()
     const secondsRatio = currentDate.getSeconds() / 60
@@ -35,8 +64,8 @@ function setClock() {
     checkAlarms(currentDate);
 }
 
-function setRotation(element, rotationRatio){
-    element.style.setProperty('--rotation', rotationRatio * 360)
+function setRotation(element, rotationRatio) {
+    element.style.setProperty('--rotation', rotationRatio * 360);
 }
 
 // Alarm functionality
@@ -174,6 +203,182 @@ function loadAlarms() {
     }
 }
 
+// Stopwatch functionality
+startStopBtn.addEventListener('click', toggleStopwatch);
+resetLapBtn.addEventListener('click', resetOrLap);
+
+function toggleStopwatch() {
+    if (stopwatchRunning) {
+        // Stop the stopwatch
+        stopStopwatch();
+        startStopBtn.textContent = 'Start';
+        startStopBtn.classList.remove('stop');
+        startStopBtn.classList.add('start');
+        resetLapBtn.textContent = 'Reset';
+    } else {
+        // Start the stopwatch
+        startStopwatch();
+        startStopBtn.textContent = 'Stop';
+        startStopBtn.classList.remove('start');
+        startStopBtn.classList.add('stop');
+        resetLapBtn.textContent = 'Lap';
+    }
+}
+
+function startStopwatch() {
+    stopwatchRunning = true;
+    
+    // If first start or after reset, set the start time
+    if (stopwatchElapsedTime === 0) {
+        stopwatchStartTime = Date.now();
+    } else {
+        // If resuming after pause, adjust start time for elapsed time
+        stopwatchStartTime = Date.now() - stopwatchElapsedTime;
+    }
+    
+    stopwatchInterval = setInterval(updateStopwatch, 10); // Update every 10ms for better precision
+}
+
+function stopStopwatch() {
+    stopwatchRunning = false;
+    clearInterval(stopwatchInterval);
+    // Store elapsed time for resuming later
+    stopwatchElapsedTime = Date.now() - stopwatchStartTime;
+}
+
+function resetOrLap() {
+    if (stopwatchRunning) {
+        // Record lap time
+        recordLap();
+    } else {
+        // Reset stopwatch
+        resetStopwatch();
+    }
+}
+
+function updateStopwatch() {
+    const currentTime = Date.now();
+    stopwatchElapsedTime = currentTime - stopwatchStartTime;
+    
+    // Convert to hours, minutes, seconds, milliseconds
+    const totalMilliseconds = stopwatchElapsedTime;
+    const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
+    const seconds = Math.floor((totalMilliseconds / 1000) % 60);
+    const minutes = Math.floor((totalMilliseconds / (1000 * 60)) % 60);
+    const hours = Math.floor(totalMilliseconds / (1000 * 60 * 60));
+    
+    // Format display
+    const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(2, '0')}`;
+    stopwatchDisplay.textContent = formattedTime;
+}
+
+function resetStopwatch() {
+    stopwatchRunning = false;
+    clearInterval(stopwatchInterval);
+    stopwatchElapsedTime = 0;
+    stopwatchDisplay.textContent = '00:00:00.00';
+    
+    // Clear lap times
+    lapTimes = [];
+    lapCounter = 0;
+    lapTimesContainer.innerHTML = '';
+    
+    // Reset button text
+    resetLapBtn.textContent = 'Reset';
+}
+
+function recordLap() {
+    lapCounter++;
+    
+    // Calculate lap time
+    const currentTime = Date.now();
+    const lapTotalTime = currentTime - stopwatchStartTime;
+    
+    // For the first lap, previous lap time is 0
+    const previousLapTotalTime = lapTimes.length > 0 ? lapTimes[lapTimes.length - 1].totalTime : 0;
+    const lapDuration = lapTotalTime - previousLapTotalTime;
+    
+    // Add to lap times array
+    lapTimes.push({
+        lapNumber: lapCounter,
+        totalTime: lapTotalTime,
+        lapTime: lapDuration
+    });
+    
+    // Display lap time
+    displayLapTime(lapCounter, lapDuration, lapTotalTime);
+}
+
+function displayLapTime(lapNumber, lapTime, totalTime) {
+    const lapItem = document.createElement('div');
+    lapItem.classList.add('lap-item');
+    
+    // Format lap time and total time
+    const formatTime = (time) => {
+        const ms = Math.floor((time % 1000) / 10);
+        const sec = Math.floor((time / 1000) % 60);
+        const min = Math.floor((time / (1000 * 60)) % 60);
+        const hr = Math.floor(time / (1000 * 60 * 60));
+        
+        return `${String(hr).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    };
+    
+    lapItem.innerHTML = `
+        <span>Lap ${lapNumber}</span>
+        <span>Lap: ${formatTime(lapTime)}</span>
+        <span>Total: ${formatTime(totalTime)}</span>
+    `;
+    
+    // Add to lap times container at the beginning (newest first)
+    lapTimesContainer.insertBefore(lapItem, lapTimesContainer.firstChild);
+    
+    // Save lap times to localStorage
+    saveLapTimes();
+}
+
+// Save lap times to localStorage
+function saveLapTimes() {
+    localStorage.setItem('stopwatchLaps', JSON.stringify(lapTimes));
+    localStorage.setItem('stopwatchCounter', lapCounter);
+    localStorage.setItem('stopwatchElapsed', stopwatchElapsedTime);
+    localStorage.setItem('stopwatchRunning', stopwatchRunning);
+}
+
+// Load lap times from localStorage
+function loadStopwatchData() {
+    const savedLapTimes = localStorage.getItem('stopwatchLaps');
+    const savedLapCounter = localStorage.getItem('stopwatchCounter');
+    const savedElapsedTime = localStorage.getItem('stopwatchElapsed');
+    const wasRunning = localStorage.getItem('stopwatchRunning') === 'true';
+    
+    if (savedLapTimes) {
+        lapTimes = JSON.parse(savedLapTimes);
+        lapCounter = parseInt(savedLapCounter || '0');
+        stopwatchElapsedTime = parseInt(savedElapsedTime || '0');
+        
+        // Display saved lap times
+        lapTimes.forEach(lap => {
+            displayLapTime(lap.lapNumber, lap.lapTime, lap.totalTime);
+        });
+        
+        // Update stopwatch display
+        if (stopwatchElapsedTime > 0) {
+            const ms = Math.floor((stopwatchElapsedTime % 1000) / 10);
+            const sec = Math.floor((stopwatchElapsedTime / 1000) % 60);
+            const min = Math.floor((stopwatchElapsedTime / (1000 * 60)) % 60);
+            const hr = Math.floor(stopwatchElapsedTime / (1000 * 60 * 60));
+            
+            stopwatchDisplay.textContent = `${String(hr).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+        }
+        
+        // If it was running when page was closed, restart it
+        if (wasRunning) {
+            startStopBtn.click();
+        }
+    }
+}
+
 // Initialize
 setClock();
 loadAlarms();
+loadStopwatchData();

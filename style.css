@@ -90,7 +90,7 @@ body {
     background-color: black;
 }
 
-.alarm-controls {
+.controls-container {
     background-color: rgba(255, 255, 255, 0.8);
     padding: 1.5rem;
     border-radius: 10px;
@@ -101,11 +101,57 @@ body {
     width: 350px;
 }
 
-.time-display {
+.tab-control {
+    display: flex;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.tab-btn:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.tab-btn:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.tab-btn.active {
+    background-color: #0066cc;
+    color: white;
+    border-color: #0055aa;
+}
+
+.tab-content {
+    width: 100%;
+}
+
+.tab-pane {
+    display: none;
+    width: 100%;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.time-display, .stopwatch-display {
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 1rem;
     color: #333;
+    text-align: center;
 }
 
 .alarm-form {
@@ -122,24 +168,29 @@ body {
     border: 1px solid #ccc;
 }
 
-.alarm-form button {
+.alarm-form button, .stopwatch-controls button {
     background-color: #0066cc;
     color: white;
     cursor: pointer;
     border: none;
     transition: background-color 0.3s;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 5px;
 }
 
-.alarm-form button:hover {
+.alarm-form button:hover, .stopwatch-controls button:hover {
     background-color: #0055aa;
 }
 
-.alarm-list {
+.alarm-list, .lap-times {
     width: 100%;
     margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-.alarm-item {
+.alarm-item, .lap-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -149,7 +200,7 @@ body {
     border-radius: 5px;
 }
 
-.alarm-item button {
+.alarm-item button, .lap-item button {
     background-color: #ff3333;
     color: white;
     border: none;
@@ -161,6 +212,30 @@ body {
 .alarm-active {
     background-color: #ffcc00;
     animation: pulse 1s infinite;
+}
+
+.stopwatch-controls {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.stopwatch-controls button {
+    flex: 1;
+    margin: 0 0.5rem;
+}
+
+.stopwatch-controls button.start {
+    background-color: #33cc33;
+}
+
+.stopwatch-controls button.stop {
+    background-color: #ff3333;
+}
+
+.stopwatch-controls button.reset, .stopwatch-controls button.lap {
+    background-color: #666666;
 }
 
 @keyframes pulse {
